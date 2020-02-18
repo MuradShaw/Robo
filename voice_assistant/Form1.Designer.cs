@@ -41,7 +41,7 @@
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(131, 25);
 			this.label1.TabIndex = 1;
-			this.label1.Text = "Ultra Instinct";
+			this.label1.Text = "ROBO (Base)";
 			this.label1.Click += new System.EventHandler(this.label1_Click);
 			// 
 			// inputField

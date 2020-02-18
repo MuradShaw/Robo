@@ -14,25 +14,9 @@ using System.Xml;
 using System.IO;
 using AudioSwitcher.AudioApi.CoreAudio;
 
-//CAN DO:
-//Google things
-//Tell the time
-//Give the date
-//Shut down pc on command
-//Change volume
+//ROBO (BASE)
+//Murad Shaw
 
-//TODO:
-//Open/close a large list of programs on command
-//Play youtube videos seamlessly with only your voice
-//Set schedules
-//Give the weather
-//Possible gamemode (?)
-//
-//Artifical learning to help structure sentences:
-//FOR EXAMPLE: Search for food
-//can be easily autofilled with "places near me" with learning
-//algarithms
-//Listen for specific keywords before being called
 namespace voice_assistant
 {
 	public partial class Form1 : Form
@@ -45,6 +29,7 @@ namespace voice_assistant
 		int awaitResponse = 0;
 		SpeechRecognitionEngine rec = new SpeechRecognitionEngine();
 
+		string ourDirectory;
 		string temp;
 		string condition;
 		string high;
@@ -53,6 +38,7 @@ namespace voice_assistant
 		Boolean wake = false;
 		public Boolean search = false;
 
+		//Start up
 		public Form1()
 		{
 			wake = false;
@@ -79,24 +65,13 @@ namespace voice_assistant
 				return;
 			}
 
+			//Get current dir
 			Console.WriteLine(GetCurrentDirectory());
 
 			InitializeComponent();
 		}
 
-		public void say(String message)
-		{
-			s.Speak(message);
-			wake = false;
-		}
-
-		private void button1_Click(object sender, EventArgs e)
-		{
-			string[] statements = new string[]
-			{ "hello world" };
-			
-		}
-
+		//Some functions
 		public void restart()
 		{
 			Process.Start(@"C:\Users\fruitbot\fruitbot");
@@ -107,7 +82,14 @@ namespace voice_assistant
 			Process.Start("shutdown", "/s /t 0");
 		}
 
-		//Taken:
+		//For sending a message through the speaker
+		public void say(String message)
+		{
+			s.Speak(message);
+			wake = false;
+		}
+
+		//This all needs to get fixed:
 		public String GetWeather(String input)
 		{
 			String query = String.Format("https://query.yahooapis.com/v1/public/yql?q=select * from weather.forecast where woeid in (select woeid from geo.places(1) where text='rockledge, pa')&format=xml&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys");
@@ -161,10 +143,13 @@ namespace voice_assistant
 
 		void rec_SpeechRecognized(object sender, SpeechRecognizedEventArgs e)
 		{
+			//Get detected words
 			String input = e.Result.Text;
-			List<string> greetings = new List<string> { "hows it going", "whats up", "whats going on", "Want to hear about"};
 
+			//Google searching
 			inputField.Text = input + "\n";
+
+			//Did we finish our google search?
 			if (input == "finished" && search == true)
 			{
 				Process.Start("https://www.google.com/#q=" + finalSearch);
@@ -173,18 +158,23 @@ namespace voice_assistant
 				inputField.Text = finalSearch + "\n";
 				search = false;
 			}
-			if (search)
+			if (search) //If not, continue building the google search
 			{
 				finalSearch = finalSearch + " " + input;
 			}
 
+			//Rng stuff?
 			Random rnd = new Random();
 
+			//WAKE ME UP INSIDE
+			//ToDo: custom wake up calls for Pro
 			if (input == "hey robo") wake = true;
 
 			if (!wake)
 				return;
 
+			//SYSTEM RELATED:
+			//	Volume up/down/mute
 			double volume = defaultPlaybackDevice.Volume;
 			if (input == "turn it up")
 				defaultPlaybackDevice.Volume = volume + 20;
@@ -193,56 +183,59 @@ namespace voice_assistant
 			else if (input == "mute")
 				defaultPlaybackDevice.Volume = 0;
 
-			if (input == "restart" || input == "update")
-			{
+			//	Restart/Shutdown
+			if (input == "restart")
 				restart();
-			}
-
 			if (input == "shut down")
-			{
 				shutdown();
-			}
 
+			//FETCHING
+			//	Initiating google searches
 			if (input == "search for" || input == "google")
-			{
 				search = true;
-			}
-			if (input == "whats the weather like")
-			{
-				say("the sky is " + GetWeather("cond") + " with a tempature of " + GetWeather("temp") + ". The lows for today is " + GetWeather("low") + " degrees with the highs being " + GetWeather("high"));
-			}
 
+			//	Get weather (w/ google search because base)
+			if (input == "whats the weather like")
+				Process.Start("https://www.google.com/#q=" + "weather");
+
+			// Get time
 			else if (input == "what time is it")
-			{
 				say(DateTime.Now.ToString("h::mm tt"));
-			}
+
+			//	Get date
 			else if (input == "whats todays date")
-			{
 				say(DateTime.Now.ToString("M/d/yyyy"));
-			}
-			else if (input == "open chrome")
-			{
+
+			//OPENING APPLICATIONS
+			// Open Chrome
+			else if (input == "open chrome" || input == "open google")
 				Process.Start("https://www.google.com/");
-			}
+
+			//	Open youtube
 			else if (input == "open you tube")
-			{
 				Process.Start("https://www.youtube.com/");
-			}
-			else if (input == "open my play list")
-			{
-				Process.Start("https://www.youtube.com/playlist?list=PL2jKQb-296C-VmMDQ8GrKZDFDvUWJ2nbF");
-			}
+			
+			//MISC.
+			//	Flip a coin
 			else if (input == "flip a coin")
 			{
-				int response = rnd.Next(1, 101);
+				int neither = rnd.Next(1, 100)
 
-				if (response == 101)
+				if(neither == 50)
+				{
 					say("Coin landed on its side");
-				else if (response <= 50)
+					return;
+				}
+
+				int response = rnd.Next(1, 2);
+
+				else if (response == 1)
 					say("Coin landed on Heads");
-				else if (response > 50 && response <= 100)
+				else if (response == 2)
 					say("Coin landed on Tails");
 			}
+
+			//	Roll a die
 			else if (input == "roll a die")
 			{
 				int response = rnd.Next(1, 6);
@@ -269,9 +262,11 @@ namespace voice_assistant
 						break;
 				}
 			}
+
+			//	Special thanks
 			else if (input == "thank you")
 			{
-				int response = rnd.Next(1, 4);
+				int response = rnd.Next(1, 3);
 
 				if (response == 1)
 					say("no problem");

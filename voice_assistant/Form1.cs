@@ -79,6 +79,8 @@ namespace voice_assistant
 				return;
 			}
 
+			Console.WriteLine(GetCurrentDirectory());
+
 			InitializeComponent();
 		}
 
@@ -188,6 +190,8 @@ namespace voice_assistant
 				defaultPlaybackDevice.Volume = volume + 20;
 			else if (input == "turn it down")
 				defaultPlaybackDevice.Volume = volume - 20;
+			else if (input == "mute")
+				defaultPlaybackDevice.Volume = 0;
 
 			if (input == "restart" || input == "update")
 			{
@@ -276,42 +280,6 @@ namespace voice_assistant
 				else if (response == 3)
 					say("you're welcome");
 			}
-
-			//last thing to prevent lag
-			if (!search)
-			{
-				for (int i = 0; i < greetings.Count() - 1; i++)
-				{
-					if (greetings[i].Equals(input))
-					{
-						switch (i)
-						{
-							case 0:
-								output.Text = "Greeting with the purpose of porpoising a question. Assume subject is asking about me and return accordingly." + "\n";
-								break;
-							case 1:
-								output.Text = "Greeting with the purpose of porpoising a question. Assume subject is asking about me and return accordingly." + "\n";
-								break;
-							case 2:
-								output.Text = "Greeting with the purpose of porpoising a question. Assume subject is asking about me and return accordingly." + "\n";
-								break;
-							case 3:
-								output.Text = "Greeting detected. Subject wants to discuss his topic as a conversation starter." + "\n";
-								break;
-						}
-					}
-				}
-			}
-		}
-
-		private void richTextBox2_TextChanged(object sender, EventArgs e)
-		{
-
-		}
-
-		private void label1_Click(object sender, EventArgs e)
-		{
-
 		}
 	}
 }

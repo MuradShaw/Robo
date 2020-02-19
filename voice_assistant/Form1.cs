@@ -41,9 +41,13 @@ namespace voice_assistant
 		//Start up
 		public Form1()
 		{
+			//Get current dir
+			ourDirectory = GetCurrentDirectory();
+
+			//Let's set some things up
 			wake = false;
 			search = false;
-			list.Add(File.ReadAllLines(@"C:\Users\fruit\OneDrive\Documents\Visual Studio 2017\VoiceBotCommands\commands.txt"));
+			list.Add(File.ReadAllLines(Path.Combine(Directory.GetCurrentDirectory(), "\\vocab.txt")));
 
 			//Responses: UNUSED
 			response.Add(new string[] { "office" });
@@ -64,9 +68,6 @@ namespace voice_assistant
 			{
 				return;
 			}
-
-			//Get current dir
-			Console.WriteLine(GetCurrentDirectory());
 
 			InitializeComponent();
 		}
@@ -214,6 +215,7 @@ namespace voice_assistant
 			//	Open youtube
 			else if (input == "open you tube")
 				Process.Start("https://www.youtube.com/");
+
 			
 			//MISC.
 			//	Flip a coin

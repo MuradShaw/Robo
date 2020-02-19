@@ -183,7 +183,9 @@ namespace voice_assistant
 			else if (input == "turn it down")
 				defaultPlaybackDevice.Volume = volume - 20;
 			else if (input == "mute")
-				defaultPlaybackDevice.Volume = 0;
+				defaultPlaybackDevice.Mute(true);
+			else if (input == "unmute")
+				defaultPlaybackDevice.Mute(false);
 
 			//	Restart/Shutdown
 			if (input == "restart")

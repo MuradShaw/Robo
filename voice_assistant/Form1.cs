@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -15,7 +15,6 @@ using System.IO;
 using AudioSwitcher.AudioApi.CoreAudio;
 
 //ROBO (BASE)
-//Murad Shaw
 
 namespace voice_assistant
 {
@@ -42,16 +41,18 @@ namespace voice_assistant
 		public Form1()
 		{
 			//Get current dir
-			ourDirectory = GetCurrentDirectory();
+			ourDirectory = Directory.GetCurrentDirectory();
 
 			//Let's set some things up
 			wake = false;
 			search = false;
-			list.Add(File.ReadAllLines(Path.Combine(Directory.GetCurrentDirectory(), "\\vocab.txt")));
+			list.Add(File.ReadAllLines(@"C:\Users\fruit\OneDrive\Documents\Visual Studio 2017\VoiceBotCommands\commands.txt"));
+
+			Console.WriteLine(Directory.GetCurrentDirectory());
 
 			//Responses: UNUSED
 			response.Add(new string[] { "office" });
-			
+
 			Grammar grammar = new Grammar(new GrammarBuilder(list));
 
 			s.SelectVoiceByHints(VoiceGender.Female);
@@ -104,7 +105,7 @@ namespace voice_assistant
 				say("An error has occured occurred while trying to get the weather. Check if your device is connected to the internet and try again");
 				return "Error, no internet connection";
 			}
-			
+
 
 			XmlNamespaceManager manager = new XmlNamespaceManager(wData.NameTable);
 			manager.AddNamespace("yweather", "http://xml.weather.yahoo.com/ns/rss/1.0");
@@ -215,15 +216,14 @@ namespace voice_assistant
 			//	Open youtube
 			else if (input == "open you tube")
 				Process.Start("https://www.youtube.com/");
-
 			
 			//MISC.
 			//	Flip a coin
 			else if (input == "flip a coin")
 			{
-				int neither = rnd.Next(1, 100)
+				int neither = rnd.Next(1, 100);
 
-				if(neither == 50)
+				if (neither == 50)
 				{
 					say("Coin landed on its side");
 					return;
@@ -231,7 +231,7 @@ namespace voice_assistant
 
 				int response = rnd.Next(1, 2);
 
-				else if (response == 1)
+				if (response == 1)
 					say("Coin landed on Heads");
 				else if (response == 2)
 					say("Coin landed on Tails");

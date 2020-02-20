@@ -5,8 +5,9 @@ A Voice Assistant Bot
 # How To Use
 
 Robo was made with simplicity in mind. Using robo is as easy as <i>Okay Robo</i> and a command.
-
+<br>
 Furthermore, Robo allows for some customization via its control panel.
+<br>
 <b>Voice preferences</b><br>
 You can select between Male and Female voice styles.
 

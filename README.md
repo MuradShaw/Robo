@@ -7,10 +7,10 @@ A Voice Assistant Bot
 Robo was made with simplicity in mind. Using robo is as easy as <i>Okay Robo</i> and a command.
 
 Furthermore, Robo allows for some customization via its control panel.
-<b>Voice preferences</b>
+<b>Voice preferences</b><br>
 You can select between Male and Female voice styles.
 
-<b>Editable list of interactable programs</b>
+<b>Editable list of interactable programs</b><br>
 Add programs to the program list. Any applications in this list can now be opened/closed via the "open/close" command.
 
 -------------------------------------------------------------------------------

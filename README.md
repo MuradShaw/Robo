@@ -2,7 +2,7 @@
 A Voice Assistant Bot
 
 -------------------------------------------------------------------------------
-#Commands
+# Commands
   *What time is it- Returns the current time.
   *What day is it-  Returns the current date.
   *Turn it up-  Turns current audio device up.

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -13,8 +13,9 @@ using System.Diagnostics;
 using System.Xml;
 using System.IO;
 using AudioSwitcher.AudioApi.CoreAudio;
+using System.Xml.Linq;
 
-//ROBO (BASE)
+//ROBO (Pro)
 
 namespace voice_assistant
 {
@@ -23,40 +24,44 @@ namespace voice_assistant
 		CoreAudioDevice defaultPlaybackDevice = new CoreAudioController().DefaultPlaybackDevice;
 		SpeechSynthesizer s = new SpeechSynthesizer();
 		Choices list = new Choices();
-		Choices response = new Choices();
-		Boolean listening = false;
-		int awaitResponse = 0;
 		SpeechRecognitionEngine rec = new SpeechRecognitionEngine();
 
+		//Declaration
+		Random rnd = new Random();
+		XDocument doc;
 		string ourDirectory;
-		string temp;
-		string condition;
-		string high;
-		string low;
+		string userDocPath;
+		string commandPath;
+
+		//Sentance search structure
 		string finalSearch = "";
+
+		//Detection variables
+		int applicationStuff = 0;
 		Boolean wake = false;
 		public Boolean search = false;
 
 		//Start up
 		public Form1()
 		{
-			//Get current dir
-			ourDirectory = Directory.GetCurrentDirectory();
-
-			//Let's set some things up
+			//Setting up
 			wake = false;
 			search = false;
-			list.Add(File.ReadAllLines(@"C:\Users\fruit\OneDrive\Documents\Visual Studio 2017\VoiceBotCommands\commands.txt"));
 
-			Console.WriteLine(Directory.GetCurrentDirectory());
+			//Get paths
+			ourDirectory = Directory.GetCurrentDirectory();
+			userDocPath = Path.Combine(Directory.GetCurrentDirectory(), @"\user_info.xml");
+			commandPath = Path.Combine(Directory.GetCurrentDirectory(), @"\commands.txt");
+			doc = XDocument.Load(userDocPath);
 
-			//Responses: UNUSED
-			response.Add(new string[] { "office" });
-
+			//Build the commands
+			list.Add(File.ReadAllLines(commandPath));
 			Grammar grammar = new Grammar(new GrammarBuilder(list));
-
+			
+			//Voice setting
 			s.SelectVoiceByHints(VoiceGender.Female);
 
+			//We're ready!
 			try
 			{
 				rec.RequestRecognizerUpdate();
@@ -91,58 +96,36 @@ namespace voice_assistant
 			wake = false;
 		}
 
-		//This all needs to get fixed:
-		public String GetWeather(String input)
+		//New application added to open/closer
+		void addPath(string appName, string path)
 		{
-			String query = String.Format("https://query.yahooapis.com/v1/public/yql?q=select * from weather.forecast where woeid in (select woeid from geo.places(1) where text='rockledge, pa')&format=xml&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys");
-			XmlDocument wData = new XmlDocument();
-			try
-			{
-				wData.Load(query);
-			}
-			catch
-			{
-				say("An error has occured occurred while trying to get the weather. Check if your device is connected to the internet and try again");
-				return "Error, no internet connection";
-			}
+			//add to xml
+			XElement application = new XElement("app",
+				new XAttribute("Name", appName),
+				new XAttribute("Path", path));
+			doc.Root.Add(application);
+			doc.Save(userDocPath);
 
-
-			XmlNamespaceManager manager = new XmlNamespaceManager(wData.NameTable);
-			manager.AddNamespace("yweather", "http://xml.weather.yahoo.com/ns/rss/1.0");
-
-			XmlNode channel = wData.SelectSingleNode("query").SelectSingleNode("results").SelectSingleNode("channel");
-			XmlNodeList nodes = wData.SelectNodes("query/results/channel");
-			try
-			{
-				temp = channel.SelectSingleNode("item").SelectSingleNode("yweather:condition", manager).Attributes["temp"].Value;
-				condition = channel.SelectSingleNode("item").SelectSingleNode("yweather:condition", manager).Attributes["text"].Value;
-				high = channel.SelectSingleNode("item").SelectSingleNode("yweather:forecast", manager).Attributes["high"].Value;
-				low = channel.SelectSingleNode("item").SelectSingleNode("yweather:forecast", manager).Attributes["low"].Value;
-
-				if (input == "temp")
-				{
-					return temp;
-				}
-				if (input == "high")
-				{
-					return high;
-				}
-				if (input == "low")
-				{
-					return low;
-				}
-				if (input == "cond")
-				{
-					return condition;
-				}
-			}
-			catch
-			{
-				return "Error Reciving data";
-			}
-			return "error";
+			//Add to vocab
+			using (StreamWriter sw = File.AppendText(commandPath))
+				sw.WriteLine(appName);
 		}
 
+		//Getting the path of an application
+		string getPathOfApp(string applicationName)
+		{
+			string path = "";
+
+			XElement xmlTree2 = new XElement("application_paths",
+				from el in doc.Elements()
+				where ((int)el >= 3 && (int)el <= 5)
+				select el
+			);
+
+			return path;
+		}
+
+		//Speech detected
 		void rec_SpeechRecognized(object sender, SpeechRecognizedEventArgs e)
 		{
 			//Get detected words
@@ -161,22 +144,43 @@ namespace voice_assistant
 				search = false;
 			}
 			if (search) //If not, continue building the google search
-			{
 				finalSearch = finalSearch + " " + input;
+
+			//Are we trying to find an application to mess with?
+			if (applicationStuff > 0)
+			{
+				//Couldn't find app
+				if (getPathOfApp(input) == null)
+				{
+					say("Could not find application " + input);
+					applicationStuff = 0;
+
+					return;
+				}
+
+				//Start application
+				if (applicationStuff == 1)
+					Process.Start(getPathOfApp(input));
+				else //Close application
+					foreach (Process proc in Process.GetProcessesByName(input))
+						proc.Kill();
+
+				//Feedback
+				string yerp = (applicationStuff == 1) ? "Opening" : "Closing";
+				say(yerp + " application " + input);
+
+				//Preperation
+				applicationStuff = 0;
 			}
 
-			//Rng stuff?
-			Random rnd = new Random();
-
 			//WAKE ME UP INSIDE
-			//ToDo: custom wake up calls for Pro
 			if (input == "hey robo") wake = true;
 
 			if (!wake)
 				return;
 
 			//SYSTEM RELATED:
-			//	Volume up/down/mute
+			// Volume up/down/mute
 			double volume = defaultPlaybackDevice.Volume;
 			if (input == "turn it up")
 				defaultPlaybackDevice.Volume = volume + 20;
@@ -187,18 +191,18 @@ namespace voice_assistant
 			else if (input == "unmute")
 				defaultPlaybackDevice.Mute(false);
 
-			//	Restart/Shutdown
+			// Restart/Shutdown
 			if (input == "restart")
 				restart();
 			if (input == "shut down")
 				shutdown();
 
 			//FETCHING
-			//	Initiating google searches
+			// Initiating google searches
 			if (input == "search for" || input == "google")
 				search = true;
 
-			//	Get weather (w/ google search because base)
+			// Get weather
 			if (input == "whats the weather like")
 				Process.Start("https://www.google.com/#q=" + "weather");
 
@@ -206,21 +210,29 @@ namespace voice_assistant
 			else if (input == "what time is it")
 				say(DateTime.Now.ToString("h::mm tt"));
 
-			//	Get date
+			// Get date
 			else if (input == "whats todays date")
 				say(DateTime.Now.ToString("M/d/yyyy"));
 
 			//OPENING APPLICATIONS
+			//opening something
+			else if (input == "open")
+				applicationStuff = 1;
+
+			//closing something
+			else if (input == "close")
+				applicationStuff = 2;
+
 			// Open Chrome
 			else if (input == "open chrome" || input == "open google")
 				Process.Start("https://www.google.com/");
 
-			//	Open youtube
+			// Open youtube
 			else if (input == "open you tube")
 				Process.Start("https://www.youtube.com/");
-			
+
 			//MISC.
-			//	Flip a coin
+			// Flip a coin
 			else if (input == "flip a coin")
 			{
 				int neither = rnd.Next(1, 100);
@@ -239,7 +251,7 @@ namespace voice_assistant
 					say("Coin landed on Tails");
 			}
 
-			//	Roll a die
+			// Roll a die
 			else if (input == "roll a die")
 			{
 				int response = rnd.Next(1, 6);
@@ -267,7 +279,7 @@ namespace voice_assistant
 				}
 			}
 
-			//	Special thanks
+			// Special thanks
 			else if (input == "thank you")
 			{
 				int response = rnd.Next(1, 3);

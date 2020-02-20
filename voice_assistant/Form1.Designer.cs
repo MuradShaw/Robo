@@ -1,4 +1,4 @@
-namespace voice_assistant
+﻿namespace voice_assistant
 {
 	partial class Form1
 	{
@@ -39,9 +39,9 @@ namespace voice_assistant
 			this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.label1.Location = new System.Drawing.Point(222, 9);
 			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(131, 25);
+			this.label1.Size = new System.Drawing.Size(132, 25);
 			this.label1.TabIndex = 1;
-			this.label1.Text = "Robo (Base)";
+			this.label1.Text = "Robo (Pro)";
 			//this.label1.Click += new System.EventHandler(this.label1_Click);
 			// 
 			// inputField

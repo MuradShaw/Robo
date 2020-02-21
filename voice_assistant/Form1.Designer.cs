@@ -1,4 +1,4 @@
-﻿namespace voice_assistant
+namespace voice_assistant
 {
 	partial class Form1
 	{
@@ -31,6 +31,8 @@
 			this.label1 = new System.Windows.Forms.Label();
 			this.inputField = new System.Windows.Forms.RichTextBox();
 			this.output = new System.Windows.Forms.RichTextBox();
+			this.radioButton1 = new System.Windows.Forms.RadioButton();
+			this.radioButton2 = new System.Windows.Forms.RadioButton();
 			this.SuspendLayout();
 			// 
 			// label1
@@ -41,8 +43,7 @@
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(132, 25);
 			this.label1.TabIndex = 1;
-			this.label1.Text = "Robo (Pro)";
-			//this.label1.Click += new System.EventHandler(this.label1_Click);
+			this.label1.Text = "Robo (Base)";
 			// 
 			// inputField
 			// 
@@ -60,16 +61,43 @@
 			this.output.TabIndex = 3;
 			this.output.Text = "";
 			// 
+			// radioButton1
+			// 
+			this.radioButton1.AutoSize = true;
+			this.radioButton1.Location = new System.Drawing.Point(12, 12);
+			this.radioButton1.Name = "radioButton1";
+			this.radioButton1.Size = new System.Drawing.Size(89, 17);
+			this.radioButton1.TabIndex = 4;
+			this.radioButton1.TabStop = true;
+			this.radioButton1.Text = "Female Voice";
+			this.radioButton1.UseVisualStyleBackColor = true;
+			this.radioButton1.CheckedChanged += new System.EventHandler(this.radioButton1_CheckedChanged);
+			// 
+			// radioButton2
+			// 
+			this.radioButton2.AutoSize = true;
+			this.radioButton2.Location = new System.Drawing.Point(122, 12);
+			this.radioButton2.Name = "radioButton2";
+			this.radioButton2.Size = new System.Drawing.Size(78, 17);
+			this.radioButton2.TabIndex = 5;
+			this.radioButton2.TabStop = true;
+			this.radioButton2.Text = "Male Voice";
+			this.radioButton2.UseVisualStyleBackColor = true;
+			this.radioButton2.CheckedChanged += new System.EventHandler(this.radioButton2_CheckedChanged);
+			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(569, 174);
+			this.Controls.Add(this.radioButton2);
+			this.Controls.Add(this.radioButton1);
 			this.Controls.Add(this.output);
 			this.Controls.Add(this.inputField);
 			this.Controls.Add(this.label1);
 			this.Name = "Form1";
-			this.Text = "Form1";
+			this.Text = "ROBO";
+			this.Load += new System.EventHandler(this.Form1_Load);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -79,6 +107,8 @@
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.RichTextBox inputField;
 		private System.Windows.Forms.RichTextBox output;
+		private System.Windows.Forms.RadioButton radioButton1;
+		private System.Windows.Forms.RadioButton radioButton2;
 	}
 }
 

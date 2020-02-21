@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -14,8 +14,9 @@ using System.Xml;
 using System.IO;
 using AudioSwitcher.AudioApi.CoreAudio;
 using System.Xml.Linq;
+using System.Reflection;
 
-//ROBO (Pro)
+//ROBO (Base)
 
 namespace voice_assistant
 {
@@ -28,16 +29,14 @@ namespace voice_assistant
 
 		//Declaration
 		Random rnd = new Random();
-		XDocument doc;
 		string ourDirectory;
-		string userDocPath;
-		string commandPath;
+		string path;
+		int someCounter;
 
 		//Sentance search structure
 		string finalSearch = "";
 
 		//Detection variables
-		int applicationStuff = 0;
 		Boolean wake = false;
 		public Boolean search = false;
 
@@ -47,17 +46,16 @@ namespace voice_assistant
 			//Setting up
 			wake = false;
 			search = false;
+			someCounter = 0;
 
 			//Get paths
-			ourDirectory = Directory.GetCurrentDirectory();
-			userDocPath = Path.Combine(Directory.GetCurrentDirectory(), @"\user_info.xml");
-			commandPath = Path.Combine(Directory.GetCurrentDirectory(), @"\commands.txt");
-			doc = XDocument.Load(userDocPath);
+			ourDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+			path = Path.Combine(ourDirectory, @"commands.txt");
 
 			//Build the commands
-			list.Add(File.ReadAllLines(commandPath));
+			list.Add(File.ReadAllLines(path));
 			Grammar grammar = new Grammar(new GrammarBuilder(list));
-			
+
 			//Voice setting
 			s.SelectVoiceByHints(VoiceGender.Female);
 
@@ -78,12 +76,14 @@ namespace voice_assistant
 			InitializeComponent();
 		}
 
-		//Some functions
+		//Restart the application
 		public void restart()
 		{
-			Process.Start(@"C:\Users\fruitbot\fruitbot");
+			Process.Start(Application.ExecutablePath);
 			Environment.Exit(0);
 		}
+
+		//Shut down the PC
 		public void shutdown()
 		{
 			Process.Start("shutdown", "/s /t 0");
@@ -96,35 +96,6 @@ namespace voice_assistant
 			wake = false;
 		}
 
-		//New application added to open/closer
-		void addPath(string appName, string path)
-		{
-			//add to xml
-			XElement application = new XElement("app",
-				new XAttribute("Name", appName),
-				new XAttribute("Path", path));
-			doc.Root.Add(application);
-			doc.Save(userDocPath);
-
-			//Add to vocab
-			using (StreamWriter sw = File.AppendText(commandPath))
-				sw.WriteLine(appName);
-		}
-
-		//Getting the path of an application
-		string getPathOfApp(string applicationName)
-		{
-			string path = "";
-
-			XElement xmlTree2 = new XElement("application_paths",
-				from el in doc.Elements()
-				where ((int)el >= 3 && (int)el <= 5)
-				select el
-			);
-
-			return path;
-		}
-
 		//Speech detected
 		void rec_SpeechRecognized(object sender, SpeechRecognizedEventArgs e)
 		{
@@ -133,45 +104,22 @@ namespace voice_assistant
 
 			//Google searching
 			inputField.Text = input + "\n";
-
+		
 			//Did we finish our google search?
 			if (input == "finished" && search == true)
 			{
+				//Do the search
 				Process.Start("https://www.google.com/#q=" + finalSearch);
 				finalSearch = "";
 
 				inputField.Text = finalSearch + "\n";
+
+				//Wrap it up
 				search = false;
+				wake = false;
 			}
 			if (search) //If not, continue building the google search
 				finalSearch = finalSearch + " " + input;
-
-			//Are we trying to find an application to mess with?
-			if (applicationStuff > 0)
-			{
-				//Couldn't find app
-				if (getPathOfApp(input) == null)
-				{
-					say("Could not find application " + input);
-					applicationStuff = 0;
-
-					return;
-				}
-
-				//Start application
-				if (applicationStuff == 1)
-					Process.Start(getPathOfApp(input));
-				else //Close application
-					foreach (Process proc in Process.GetProcessesByName(input))
-						proc.Kill();
-
-				//Feedback
-				string yerp = (applicationStuff == 1) ? "Opening" : "Closing";
-				say(yerp + " application " + input);
-
-				//Preperation
-				applicationStuff = 0;
-			}
 
 			//WAKE ME UP INSIDE
 			if (input == "hey robo") wake = true;
@@ -179,6 +127,8 @@ namespace voice_assistant
 			if (!wake)
 				return;
 
+			someCounter++;
+			Console.WriteLine(someCounter);
 			//SYSTEM RELATED:
 			// Volume up/down/mute
 			double volume = defaultPlaybackDevice.Volume;
@@ -192,18 +142,18 @@ namespace voice_assistant
 				defaultPlaybackDevice.Mute(false);
 
 			// Restart/Shutdown
-			if (input == "restart")
+			else if(input == "restart")
 				restart();
-			if (input == "shut down")
+			else if(input == "shut down")
 				shutdown();
 
 			//FETCHING
 			// Initiating google searches
-			if (input == "search for" || input == "google")
+			else if(input == "search for" || input == "google")
 				search = true;
 
 			// Get weather
-			if (input == "whats the weather like")
+			else if(input == "whats the weather like" || input == "weather")
 				Process.Start("https://www.google.com/#q=" + "weather");
 
 			// Get time
@@ -215,14 +165,6 @@ namespace voice_assistant
 				say(DateTime.Now.ToString("M/d/yyyy"));
 
 			//OPENING APPLICATIONS
-			//opening something
-			else if (input == "open")
-				applicationStuff = 1;
-
-			//closing something
-			else if (input == "close")
-				applicationStuff = 2;
-
 			// Open Chrome
 			else if (input == "open chrome" || input == "open google")
 				Process.Start("https://www.google.com/");
@@ -291,6 +233,28 @@ namespace voice_assistant
 				else if (response == 3)
 					say("you're welcome");
 			}
+
+			//End it
+			if (someCounter >= 2 && !search)
+			{
+				wake = false;
+				someCounter = 0;
+			}
+		}
+
+		private void Form1_Load(object sender, EventArgs e)
+		{
+			say("Row bo Activated");
+		}
+
+		private void radioButton1_CheckedChanged(object sender, EventArgs e)
+		{
+			s.SelectVoiceByHints(VoiceGender.Female);
+		}
+
+		private void radioButton2_CheckedChanged(object sender, EventArgs e)
+		{
+			s.SelectVoiceByHints(VoiceGender.Male);
 		}
 	}
 }
